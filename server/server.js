@@ -13,9 +13,24 @@ const { User, ClothingItem, Booking, Message, Payment, ConditionReport } = requi
 const app = express();
 const server = http.createServer(app);
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-const io = new Server(server, { cors: { origin: clientUrl, methods: ["GET", "POST"] } });
 
-app.use(cors({ origin: clientUrl }));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://reweara-chi.vercel.app"
+];
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json({ limit: "2mb" }));
 
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
