@@ -12,28 +12,24 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-const demoItems = [
-  { _id: "demo1", title: "Midnight Satin Evening Dress", category: "Dress", size: "M", condition: "Like new", pricePerDay: 280, securityDeposit: 500, area: "Campus North", images: ["https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85"], description: "An elegant satin dress for dinners, parties and special events.", owner: { name: "Aanya", area: "Campus North" }, demo: true },
-  { _id: "demo2", title: "Classic Ivory Festive Set", category: "Traditional", size: "S", condition: "Good", pricePerDay: 350, securityDeposit: 700, area: "Student Square", images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=85"], description: "A festive outfit for celebrations and family functions.", owner: { name: "Meera", area: "Student Square" }, demo: true },
-  { _id: "demo3", title: "Tailored Charcoal Blazer", category: "Suit", size: "L", condition: "Like new", pricePerDay: 220, securityDeposit: 400, area: "Campus East", images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=85"], description: "A smart, versatile layer for presentations and formal events.", owner: { name: "Rohan", area: "Campus East" }, demo: true },
-  { _id: "demo4", title: "Rose Gold Party Outfit", category: "Dress", size: "M", condition: "Good", pricePerDay: 300, securityDeposit: 600, area: "Student Square", images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=85"], description: "A statement look for birthdays, college nights and parties.", owner: { name: "Isha", area: "Student Square" }, demo: true },
-  { _id: "demo5", title: "Minimal Linen Co-ord", category: "Other", size: "S", condition: "Like new", pricePerDay: 180, securityDeposit: 300, area: "Campus West", images: ["https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=85"], description: "An effortless outfit for daytime events and casual outings.", owner: { name: "Kavya", area: "Campus West" }, demo: true },
-  { _id: "demo6", title: "Emerald Occasion Gown", category: "Dress", size: "L", condition: "Good", pricePerDay: 400, securityDeposit: 800, area: "Campus North", images: ["https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=85"], description: "A bold occasion gown for formal evenings and celebrations.", owner: { name: "Diya", area: "Campus North" }, demo: true }
-];
 
 function App() {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("reweara_user") || "null"));
-  const [items, setItems] = useState(demoItems);
+  const [items, setItems] = useState([]);
   const [notice, setNotice] = useState("");
   const [apiOnline, setApiOnline] = useState(false);
   useEffect(() => { api.get("/health").then(() => setApiOnline(true)).catch(() => setApiOnline(false)); }, []);
   const refreshItems = async (params = {}) => {
-    try {
-      const { data } = await api.get("/items", { params });
-      setItems(data.items);
-      setApiOnline(true);
-    } catch { setApiOnline(false); }
-  };
+  try {
+    const { data } = await api.get("/items", { params });
+    setItems(data.items || []);
+    setApiOnline(true);
+  } catch (error) {
+    setItems([]);
+    setApiOnline(false);
+    console.error("Could not load clothing listings:", error);
+  }
+};
   useEffect(() => { refreshItems(); }, []);
   const login = result => {
     localStorage.setItem("reweara_token", result.token);
@@ -59,7 +55,7 @@ function App() {
       <Route path="/how-it-works" element={<How />} />
       <Route path="*" element={<Home items={items} refreshItems={refreshItems} user={user} setNotice={setNotice} />} />
     </Routes>
-    <footer><Link to="/" className="brand footer-brand"><span className="brand-mark">r</span><span>reweara<span className="brand-dot">.</span></span></Link><p>Good outfits deserve more than one night out.</p><span className={`api-status ${apiOnline ? "online" : ""}`}><i /> {apiOnline ? "Connected to API" : "Preview mode · connect MongoDB to go live"}</span></footer>
+    <footer><Link to="/" className="brand footer-brand"><span className="brand-mark">r</span><span>reweara<span className="brand-dot">.</span></span></Link><p>Good outfits deserve more than one night out.</p><span className={`api-status ${apiOnline ? "online" : ""}`}><i /> {apiOnline ? "Connected to API" : "Unable to connect to server"}</span></footer>
   </div>;
 }
 
